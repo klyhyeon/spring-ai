@@ -1,13 +1,21 @@
 package com.example.demo
 
 import com.example.demo.model.Request
+import org.springframework.ai.chat.messages.UserMessage
 import org.springframework.ai.chat.prompt.PromptTemplate
+import org.springframework.ai.image.ImagePrompt
+import org.springframework.ai.model.Media
 import org.springframework.ai.openai.OpenAiChatModel
+import org.springframework.ai.openai.OpenAiImageModel
+import org.springframework.ai.openai.OpenAiImageOptions
 import org.springframework.stereotype.Service
+import org.springframework.util.MimeTypeUtils
+import java.net.URI
 
 @Service
 class AiService(
     private val openAiChatModel: OpenAiChatModel,
+    private val openAiImageApi: OpenAiImageModel,
 ) {
 
     fun chatbot(request: Request) {
@@ -37,4 +45,28 @@ class AiService(
         val prompt = promptTemplateDoctor.create(mapOf("message" to request.text))
         println(openAiChatModel.call(prompt).result.output.content)
     }
+
+    fun imageAI(request: Request): String {
+//        val prompt = "너는 음식 감별사야 사진을 보고 이 사진으로 할 수 있는 요리를 알려줘."
+        val prompt = "사진을 보고 뭔지 판단해줘."
+        val userMessage = UserMessage(prompt, listOf(Media(MimeTypeUtils.IMAGE_JPEG, URI(request.text).toURL())))
+        return openAiChatModel.call(userMessage)
+    }
+
+    fun imageGenAI(request: Request): String {
+        val prompt = "사용자가 글을 입력하면 너는 고흐의 화풍으로 그림을 그려줘 \n"
+        return openAiImageApi.call(
+            ImagePrompt(
+                prompt + request.text,
+                OpenAiImageOptions.builder()
+                    .withQuality("hd")
+                    .withN(1)
+                    .withHeight(1024)
+                    .withWidth(1024)
+                    .build(),
+            ),
+        ).result.output.url
+    }
+
+
 }

@@ -28,4 +28,18 @@ class AiController(
     ) {
         aiService.chatbot(request)
     }
+
+    @PostMapping("/image")
+    fun imageAI(
+        @RequestBody request: Request,
+    ): String {
+        return aiService.imageAI(request)
+    }
+
+    @PostMapping("/gen")
+    fun imageGenAI(
+        @RequestBody request: Request,
+    ): String {
+        return aiService.imageGenAI(request)
+    }
 }
